@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electoral Simulation — National Voting Portal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --paper:#F6F4EE;
+  --paper-raised:#FFFFFF;
+  --ink-navy:#1B2A4A;
+  --ink-navy-soft:#2B3E63;
+  --indelible:#4B2E83;
+  --indelible-soft:#6B4CA6;
+  --saffron:#D97A2C;
+  --green:#2F6B4F;
+  --teal:#1F6F78;
+  --grey:#6B7280;
+  --line:#DFDAD0;
+  --text:#23262B;
+  --text-soft:#5B5750;
+  --danger:#A3372F;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{background:var(--paper);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+::selection{background:var(--indelible-soft);color:#fff;}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px 80px;}
+
+header.top{border-bottom:1px solid var(--line);background:var(--paper);position:relative;}
+.tricolor-hair{height:4px;width:100%;background:linear-gradient(90deg,var(--saffron) 0 33.3%,#fff 33.3% 66.6%,var(--green) 66.6% 100%);}
+.top-inner{max-width:1120px;margin:0 auto;padding:28px 24px 22px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;}
+.brand-mark{display:flex;align-items:center;gap:14px;}
+.seal{width:52px;height:52px;border-radius:50%;border:2px solid var(--ink-navy);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink-navy);flex-shrink:0;background:var(--paper-raised);}
+h1.brand-title{font-family:'Fraunces',serif;font-weight:600;font-size:29px;margin:0;color:var(--ink-navy);letter-spacing:0.2px;}
+.brand-sub{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-soft);margin-top:3px;}
+.poll-status-chip{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.5px;padding:7px 13px;border-radius:20px;border:1px solid var(--line);background:var(--paper-raised);color:var(--text-soft);display:flex;align-items:center;gap:7px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+.poll-status-chip.closed .dot{background:var(--danger);}
+
+nav.tabs{display:flex;gap:6px;margin:26px 0 30px;border-bottom:1px solid var(--line);}
+nav.tabs button{font-family:'Inter',sans-serif;font-weight:600;font-size:14.5px;background:none;border:none;padding:12px 4px;margin-right:26px;color:var(--text-soft);cursor:pointer;position:relative;top:1px;border-bottom:2px solid transparent;}
+nav.tabs button.active{color:var(--ink-navy);border-bottom:2px solid var(--indelible);}
+nav.tabs button:hover{color:var(--ink-navy);}
+section.panel{display:none;}
+section.panel.active{display:block;animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.card{background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:26px 28px;margin-bottom:22px;}
+.card h2{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:0 0 6px;color:var(--ink-navy);}
+.card .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--indelible);margin:0 0 8px;}
+.card .desc{color:var(--text-soft);font-size:14px;margin:0 0 20px;line-height:1.5;}
+
+label{display:block;font-size:12.5px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px;}
+input[type=text],input[type=password],select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:7px;font-family:'IBM Plex Mono',monospace;font-size:14.5px;background:#FCFBF8;color:var(--text);}
+input:focus,select:focus{outline:none;border-color:var(--indelible-soft);box-shadow:0 0 0 3px rgba(75,46,131,0.12);}
+
+.btn{font-family:'Inter',sans-serif;font-weight:600;font-size:14px;padding:12px 22px;border-radius:7px;border:none;cursor:pointer;background:var(--ink-navy);color:#fff;transition:transform .1s ease, background .15s ease;}
+.btn:hover{background:var(--ink-navy-soft);}
+.btn:active{transform:scale(0.98);}
+.btn.primary{background:var(--indelible);}
+.btn.primary:hover{background:var(--indelible-soft);}
+.btn.ghost{background:transparent;color:var(--ink-navy);border:1px solid var(--line);}
+.btn.ghost:hover{background:#F0EEE7;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;}
+.row > div{flex:1;min-width:200px;}
+
+.msg{padding:12px 15px;border-radius:7px;font-size:13.5px;margin-top:14px;line-height:1.5;}
+.msg.error{background:#FBEAE8;color:var(--danger);border:1px solid #F0C6C1;}
+.msg.info{background:#EFF3EF;color:var(--green);border:1px solid #CFE0D2;}
+
+.voter-record{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:18px 20px;border:1px dashed var(--line);border-radius:8px;margin-top:18px;flex-wrap:wrap;background:#FCFBF8;}
+.voter-record .who{font-size:15px;}
+.voter-record .who b{font-family:'Fraunces',serif;font-size:18px;color:var(--ink-navy);}
+.voter-record .id-tag{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-soft);}
+.status-pill{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:5px 11px;border-radius:20px;letter-spacing:0.4px;}
+.status-pill.voted{background:#EAE3F5;color:var(--indelible);}
+.status-pill.not-voted{background:#F3EFE4;color:var(--saffron);}
+
+.candidates{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:18px;}
+.cand{border:1.5px solid var(--line);border-radius:9px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:6px;background:#FCFBF8;transition:border-color .12s, background .12s;}
+.cand:hover{border-color:var(--indelible-soft);}
+.cand.selected{border-color:var(--indelible);background:#F4EFFA;}
+.cand .sym{font-size:26px;}
+.cand .name{font-weight:600;font-size:14.5px;}
+
+.stamp-wrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding:26px 0 6px;}
+.stamp{width:90px;height:90px;border-radius:50%;border:3px solid var(--indelible);color:var(--indelible);display:flex;align-items:center;justify-content:center;font-size:38px;transform:rotate(-9deg);animation:stampin .38s cubic-bezier(.2,1.4,.4,1);margin-bottom:16px;}
+@keyframes stampin{from{transform:rotate(-9deg) scale(2.2);opacity:0;}to{transform:rotate(-9deg) scale(1);opacity:1;}}
+.stamp-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--ink-navy);margin:0 0 4px;}
+.stamp-sub{font-size:13.5px;color:var(--text-soft);}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:4px;}
+.stat{background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:18px 20px;}
+.stat .num{font-family:'Fraunces',serif;font-size:30px;font-weight:600;color:var(--ink-navy);line-height:1;}
+.stat .num small{font-size:14px;font-weight:500;color:var(--text-soft);}
+.stat .lbl{font-size:12px;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.6px;margin-top:8px;}
+.stat .sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-soft);margin-top:4px;}
+
+table{width:100%;border-collapse:collapse;margin-top:6px;font-size:13.5px;}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-soft);padding:9px 10px;border-bottom:1.5px solid var(--line);font-weight:600;}
+tbody td{padding:9px 10px;border-bottom:1px solid var(--line);}
+tbody tr:hover{background:#FBFAF6;}
+td.mono, th.mono{font-family:'IBM Plex Mono',monospace;}
+.bar-bg{background:#EFEBE1;border-radius:4px;height:6px;width:100%;overflow:hidden;}
+.bar-fill{height:100%;background:var(--indelible);border-radius:4px;}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.filters select, .filters input{width:auto;min-width:160px;}
+.type-tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:2px 7px;border-radius:4px;background:#EFEBE1;color:var(--text-soft);}
+
+.tally-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.tally-row .name{width:180px;font-size:13.5px;font-weight:600;flex-shrink:0;}
+.tally-row .count{font-family:'IBM Plex Mono',monospace;font-size:12.5px;width:110px;text-align:right;flex-shrink:0;}
+.locked-box{text-align:center;padding:36px 20px;color:var(--text-soft);border:1px dashed var(--line);border-radius:9px;}
+.locked-box .lockicon{font-size:26px;margin-bottom:10px;}
+
+.roll-toggle{font-size:13px;color:var(--indelible);cursor:pointer;text-decoration:underline;margin-top:14px;display:inline-block;}
+.small-note{font-size:12px;color:var(--text-soft);margin-top:10px;line-height:1.5;}
+footer.notice{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--text-soft);line-height:1.6;}
+
+.two-col{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;}
+@media (max-width:800px){.two-col{grid-template-columns:1fr;}}
+.donut-wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+.donut{width:150px;height:150px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;}
+.donut::after{content:"";position:absolute;width:96px;height:96px;border-radius:50%;background:var(--paper-raised);}
+.donut .donut-center{position:relative;z-index:1;text-align:center;}
+.donut .donut-center .n{font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:var(--ink-navy);}
+.donut .donut-center .l{font-size:9.5px;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.5px;}
+.legend{display:flex;flex-direction:column;gap:8px;font-size:13px;}
+.legend .item{display:flex;align-items:center;gap:8px;}
+.legend .sw{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+.legend .item b{font-family:'IBM Plex Mono',monospace;font-weight:600;margin-left:auto;font-size:12px;}
+
+.rank-row{display:flex;align-items:center;gap:12px;margin-bottom:11px;}
+.rank-row .rk{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-soft);width:16px;flex-shrink:0;}
+.rank-row .rn{font-size:13px;width:150px;flex-shrink:0;font-weight:600;}
+.rank-row .rv{font-family:'IBM Plex Mono',monospace;font-size:11.5px;width:90px;text-align:right;flex-shrink:0;}
+
+.fields-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);}
+.fields-grid .f-k{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-soft);}
+.fields-grid .f-v{font-size:13.5px;margin-top:3px;color:var(--text);}
+.fields-grid .f-v.mono{font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="tricolor-hair"></div>
+  <div class="top-inner">
+    <div class="brand-mark">
+      <div class="seal">🗳</div>
+      <div>
+        <h1 class="brand-title">National Voting Simulation</h1>
+        <div class="brand-sub">Electoral Roll &amp; Ballot Portal — Demo Environment</div>
+      </div>
+    </div>
+    <div class="poll-status-chip" id="pollChip"><span class="dot"></span><span id="pollChipText">Polling open</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="vote">Cast Your Vote</button>
+    <button class="tab-btn" data-tab="dashboard">Records &amp; Results</button>
+  </nav>
+
+  <section class="panel active" id="panel-vote">
+    <div class="card">
+      <h2>Find your record</h2>
+      <p class="desc">Enter your Voter ID to check your ballot status. This ID belongs to an 8,000-voter interactive roll, sampled proportionally across every state and UT to represent India's ~140 crore population at a scale a browser can actually hold — see the Records &amp; Results tab for the full population-scale simulation.</p>
+      <div class="row">
+        <div>
+          <label for="voterIdInput">Voter ID</label>
+          <input type="text" id="voterIdInput" placeholder="e.g. BR-4821" autocomplete="off">
+        </div>
+        <div style="flex:0 0 auto;">
+          <button class="btn primary" id="lookupBtn">Find my record</button>
+        </div>
+      </div>
+      <div id="lookupMsg"></div>
+      <span class="roll-toggle" id="rollToggle">Don't know your ID? Browse the sample electoral roll →</span>
+      <div id="rollBrowser" style="display:none;margin-top:16px;"></div>
+    </div>
+    <div id="voterCard"></div>
+  </section>
+
+  <section class="panel" id="panel-dashboard">
+
+    <div class="card">
+      <p class="eyebrow">National scale · simulated</p>
+      <h2>India-scale electorate, ~140 crore population</h2>
+      <p class="desc">These figures model the full national population using approximate, publicly known state/UT population shares (not live census data), an assumed ~68% voting-age share, and a simulated turnout percentage generated per state. This is what a real national count looks like in aggregate — no browser can hold 140 crore individual objects, so the interactive roll below samples it instead.</p>
+      <div class="stat-grid" id="nationalStats"></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h2>Simulated national turnout</h2>
+        <div class="donut-wrap">
+          <div class="donut" id="turnoutDonut"></div>
+          <div class="legend" id="turnoutLegend"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Top 10 by estimated electorate</h2>
+        <div id="topStatesRank"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>State &amp; Union Territory register</h2>
+      <p class="desc">Population-scale figures per region — approximate population, estimated electorate, simulated turnout.</p>
+      <div class="filters">
+        <input type="text" id="stateSearch" placeholder="Search state or UT…">
+        <select id="typeFilter">
+          <option value="all">All regions</option>
+          <option value="State">States only</option>
+          <option value="UT">Union Territories only</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr><th>Region</th><th class="mono">Type</th><th class="mono">Population (approx.)</th><th class="mono">Est. electorate</th><th class="mono">Votes cast (sim.)</th><th style="width:150px;">Turnout</th></tr>
+          </thead>
+          <tbody id="stateTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">Interactive · 8,000-voter sample</p>
+      <h2>Individual voter status</h2>
+      <p class="desc">This is the actual, votable roll behind the "Cast Your Vote" tab — a representative sample, proportionally distributed by population, so lookups and search stay instant. Each record now also carries a demo address, phone number, email, and the document used to verify the voter — all fictionally generated, not real citizen data.</p>
+      <div class="filters">
+        <select id="voterRegionFilter"><option value="all">All regions</option></select>
+        <select id="voterStatusFilter">
+          <option value="all">All statuses</option>
+          <option value="voted">Voted</option>
+          <option value="not-voted">Not voted</option>
+        </select>
+        <input type="text" id="voterSearch" placeholder="Search name or ID…">
+      </div>
+      <div class="stat-grid" id="sampleStats" style="margin-bottom:18px;"></div>
+      <div style="overflow-x:auto;max-height:340px;overflow-y:auto;">
+        <table style="min-width:1080px;">
+          <thead>
+            <tr><th class="mono">Voter ID</th><th>Name</th><th>Region</th><th>Document</th><th>Phone</th><th>Email</th><th>Address</th><th>Status</th><th class="mono">Timestamp</th></tr>
+          </thead>
+          <tbody id="voterTableBody"></tbody>
+        </table>
+      </div>
+      <p class="small-note" id="voterTableNote"></p>
+    </div>
+
+    <div class="card">
+      <h2>Election officer panel</h2>
+      <p class="desc">Party-wise tally (from the interactive sample) stays sealed until an officer formally closes polling — same as a real count, held back until booths shut.</p>
+      <div id="officerArea"></div>
+    </div>
+  </section>
+
+  <footer class="notice">
+    This is an illustrative simulation for learning purposes, not a production voting system or an official data source. Population and turnout figures are approximate and generated for demo purposes, not sourced from a live census or election authority. Every voter's name, address, phone number, email, and document type is also fictionally generated for this demo — no real citizen or government database is used or represented. Data lives in shared demo storage visible to anyone using this artifact; do not enter real personal information. A genuine secure e-voting system would additionally require verified identity binding, end-to-end vote encryption, a voter-verifiable audit trail, and independent security review.
+  </footer>
+</div>
+
+<script>
+(function(){
+  // [name, type, populationInCrores]
+  const STATES = [
+    ["Uttar Pradesh","State",23.7],["Maharashtra","State",12.7],["Bihar","State",13.0],
+    ["West Bengal","State",10.0],["Madhya Pradesh","State",8.6],["Tamil Nadu","State",7.8],
+    ["Rajasthan","State",8.0],["Karnataka","State",6.8],["Gujarat","State",7.2],
+    ["Andhra Pradesh","State",5.4],["Odisha","State",4.6],["Telangana","State",3.9],
+    ["Kerala","State",3.6],["Jharkhand","State",3.9],["Assam","State",3.6],
+    ["Punjab","State",3.0],["Chhattisgarh","State",2.9],["Haryana","State",2.9],
+    ["Himachal Pradesh","State",0.75],["Uttarakhand","State",1.12],["Tripura","State",0.41],
+    ["Meghalaya","State",0.34],["Manipur","State",0.33],["Nagaland","State",0.22],
+    ["Goa","State",0.16],["Arunachal Pradesh","State",0.16],["Mizoram","State",0.12],
+    ["Sikkim","State",0.07],
+    ["Delhi (NCT)","UT",3.35],["Jammu and Kashmir","UT",1.37],["Puducherry","UT",0.15],
+    ["Chandigarh","UT",0.11],["Andaman and Nicobar Islands","UT",0.045],
+    ["Dadra and Nagar Haveli and Daman and Diu","UT",0.065],["Ladakh","UT",0.03],
+    ["Lakshadweep","UT",0.007]
+  ];
+  const VOTING_AGE_SHARE = 0.68;
+  const SAMPLE_SIZE = 8000;
+
+  const CANDIDATES = [
+    {id:"unity",    name:"Unity Party",     symbol:"🌳", color:"#2F6B4F"},
+    {id:"progress", name:"Progress Party",  symbol:"☀️", color:"#D97A2C"},
+    {id:"peoples",  name:"People's Front",  symbol:"⚙️", color:"#1B2A4A"},
+    {id:"horizon",  name:"New Horizon",     symbol:"🌊", color:"#1F6F78"},
+    {id:"nota",     name:"None of the Above (NOTA)", symbol:"∅", color:"#6B7280"}
+  ];
+
+  const FIRST_NAMES = ["Aarav","Vivaan","Aditya","Ishaan","Kabir","Rohan","Arjun","Sai","Krishna","Dev",
+    "Ananya","Diya","Saanvi","Myra","Aadhya","Priya","Neha","Kavya","Riya","Meera",
+    "Farhan","Imran","Zoya","Aisha","Rahul","Manav","Vikram","Sanjay","Nikhil","Tanvi",
+    "Lakshmi","Divya","Pooja","Rekha","Suresh","Ramesh","Anil","Sunil","Geeta","Kiran"];
+  const LAST_NAMES = ["Sharma","Verma","Gupta","Reddy","Nair","Iyer","Patel","Singh","Das","Roy",
+    "Khan","Ali","Bora","Chatterjee","Menon","Rao","Naidu","Joshi","Mishra","Pillai",
+    "Thapa","Lepcha","Fernandes","D'Souza","Yadav","Chauhan","Kapoor","Malhotra","Bhatt","Dutta"];
+
+  // Document type used to verify identity at the time of voting (fictional demo values only)
+  const DOCUMENTS = [
+    {label:"Voter ID (EPIC)", weight:70},
+    {label:"Aadhaar Card (masked)", weight:15},
+    {label:"Passport", weight:8},
+    {label:"Driving Licence", weight:7}
+  ];
+  const LOCALITY_WORDS = ["Gandhi Nagar","Nehru Colony","Shastri Marg","Ambedkar Road","Lake View Enclave",
+    "Station Road","Model Town","Civil Lines","Vivekananda Park","Sector 12","Green Park",
+    "Rajiv Chowk Area","Subhash Nagar","Patel Chowk","Ashok Vihar"];
+  // Representative city per state/UT, used only to shape a plausible-looking demo address
+  const STATE_CITY = {
+    "Uttar Pradesh":"Lucknow","Maharashtra":"Pune","Bihar":"Patna","West Bengal":"Kolkata",
+    "Madhya Pradesh":"Bhopal","Tamil Nadu":"Chennai","Rajasthan":"Jaipur","Karnataka":"Bengaluru",
+    "Gujarat":"Ahmedabad","Andhra Pradesh":"Vijayawada","Odisha":"Bhubaneswar","Telangana":"Hyderabad",
+    "Kerala":"Kochi","Jharkhand":"Ranchi","Assam":"Guwahati","Punjab":"Ludhiana","Chhattisgarh":"Raipur",
+    "Haryana":"Gurugram","Himachal Pradesh":"Shimla","Uttarakhand":"Dehradun","Tripura":"Agartala",
+    "Meghalaya":"Shillong","Manipur":"Imphal","Nagaland":"Kohima","Goa":"Panaji","Arunachal Pradesh":"Itanagar",
+    "Mizoram":"Aizawl","Sikkim":"Gangtok","Delhi (NCT)":"New Delhi","Jammu and Kashmir":"Srinagar",
+    "Puducherry":"Puducherry","Chandigarh":"Chandigarh","Andaman and Nicobar Islands":"Port Blair",
+    "Dadra and Nagar Haveli and Daman and Diu":"Daman","Ladakh":"Leh","Lakshadweep":"Kavaratti"
+  };
+
+  function pickDocument(){
+    const total = DOCUMENTS.reduce((s,d)=>s+d.weight,0);
+    let r = Math.random()*total;
+    for(const d of DOCUMENTS){ if(r < d.weight) return d.label; r -= d.weight; }
+    return DOCUMENTS[0].label;
+  }
+  function genPhone(){
+    return "+91 9"+randInt(10)+"XX-XXX-"+pad(randInt(10000),4);
+  }
+  function genEmail(fn,ln,idNum){
+    return (fn+"."+ln+idNum).toLowerCase().replace(/[^a-z0-9.]/g,"") + "@example-mail.test";
+  }
+  function genAddress(state){
+    const houseNo = 1+randInt(499);
+    const locality = LOCALITY_WORDS[randInt(LOCALITY_WORDS.length)];
+    const city = STATE_CITY[state] || state;
+    const pin = pad(100000+randInt(899999),6);
+    return `House No. ${houseNo}, ${locality}, ${city} - ${pin}`;
+  }
+
+  let voters = [];
+  let stateTurnout = {};      // name -> pct (used for BOTH national-scale sim and sample probability)
+  let pollClosed = false;
+  let selectedCandidate = null;
+  let currentVoter = null;
+
+  function randInt(n){ return Math.floor(Math.random()*n); }
+  function randRange(a,b){ return a + Math.random()*(b-a); }
+  function pad(n,len){ return String(n).padStart(len,"0"); }
+  function stateCode(name){ return name.replace(/\(.*?\)/g,"").trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
+  function totalPopulation(){ return STATES.reduce((s,r)=>s+r[2],0); }
+
+  function seedTurnout(){
+    const map = {};
+    STATES.forEach(([name])=>{ map[name] = +(randRange(52,79).toFixed(1)); });
+    return map;
+  }
+
+  function seedVoters(turnoutMap){
+    let list = [];
+    let counter = 1000;
+    const totalPop = totalPopulation();
+    STATES.forEach(([state,type,popCr])=>{
+      let count = Math.max(4, Math.round(SAMPLE_SIZE * (popCr/totalPop)));
+      const pct = turnoutMap[state] / 100;
+      for(let i=0;i<count;i++){
+        const fn = FIRST_NAMES[randInt(FIRST_NAMES.length)];
+        const ln = LAST_NAMES[randInt(LAST_NAMES.length)];
+        counter += 1 + randInt(4);
+        const id = stateCode(state)+"-"+pad(counter,4);
+        const hasVoted = Math.random() < pct;
+        let votedFor = null, timestamp = null;
+        if(hasVoted){
+          votedFor = CANDIDATES[randInt(CANDIDATES.length)].id;
+          const d = new Date(Date.now() - randInt(3)*3600*1000*randInt(20));
+          timestamp = d.toISOString();
+        }
+        list.push({ id, name: fn+" "+ln, state, type, hasVoted, votedFor, timestamp,
+          phone: genPhone(), email: genEmail(fn,ln,counter), address: genAddress(state), document: pickDocument() });
+      }
+    });
+    return list;
+  }
+
+  async function loadData(){
+    try{
+      const t = await window.storage.get("voting-sim-state-turnout", true);
+      if(t && t.value){ stateTurnout = JSON.parse(t.value); }
+      else { stateTurnout = seedTurnout(); await window.storage.set("voting-sim-state-turnout", JSON.stringify(stateTurnout), true); }
+    }catch(e){ stateTurnout = seedTurnout(); }
+
+    try{
+      const v = await window.storage.get("voting-sim-voters-v3", true);
+      if(v && v.value){ voters = JSON.parse(v.value); }
+      else { voters = seedVoters(stateTurnout); await window.storage.set("voting-sim-voters-v3", JSON.stringify(voters), true); }
+    }catch(e){
+      voters = seedVoters(stateTurnout);
+      try{ await window.storage.set("voting-sim-voters-v3", JSON.stringify(voters), true); }catch(e2){}
+    }
+    try{
+      const p = await window.storage.get("voting-sim-poll-status", true);
+      if(p && p.value){ pollClosed = JSON.parse(p.value).closed; }
+    }catch(e){ pollClosed = false; }
+    renderAll();
+  }
+
+  async function saveVoters(){
+    try{ await window.storage.set("voting-sim-voters-v3", JSON.stringify(voters), true); }
+    catch(e){ console.error("Storage error saving voters", e); }
+  }
+  async function savePollStatus(){
+    try{ await window.storage.set("voting-sim-poll-status", JSON.stringify({closed:pollClosed}), true); }
+    catch(e){ console.error("Storage error saving poll status", e); }
+  }
+
+  document.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+      if(btn.dataset.tab === "dashboard") renderDashboard();
+    });
+  });
+
+  document.getElementById("lookupBtn").addEventListener("click", doLookup);
+  document.getElementById("voterIdInput").addEventListener("keydown", e=>{ if(e.key==="Enter") doLookup(); });
+
+  function doLookup(){
+    const idRaw = document.getElementById("voterIdInput").value.trim().toUpperCase();
+    const msgEl = document.getElementById("lookupMsg");
+    const cardEl = document.getElementById("voterCard");
+    msgEl.innerHTML = ""; cardEl.innerHTML = ""; selectedCandidate = null;
+    if(!idRaw){ msgEl.innerHTML = '<div class="msg error">Enter a Voter ID to continue.</div>'; return; }
+    const v = voters.find(x=>x.id === idRaw);
+    if(!v){ msgEl.innerHTML = '<div class="msg error">No record found for <b>'+escapeHtml(idRaw)+'</b>. Check the ID or browse the sample roll below.</div>'; currentVoter = null; return; }
+    currentVoter = v;
+    renderVoterCard(v);
+  }
+
+  function renderVoterCard(v){
+    const cardEl = document.getElementById("voterCard");
+    if(pollClosed){
+      cardEl.innerHTML = `<div class="card"><h2>Polling closed</h2><p class="desc">The officer has closed this poll and declared results. New ballots can no longer be cast.</p></div>`;
+      return;
+    }
+    if(v.hasVoted){
+      cardEl.innerHTML = `<div class="card"><div class="stamp-wrap"><div class="stamp">✓</div>
+        <p class="stamp-title">Ballot already cast</p>
+        <p class="stamp-sub"><b>${escapeHtml(v.name)}</b> (${v.id}) voted from ${escapeHtml(v.state)} on ${formatDate(v.timestamp)}.<br>One vote per voter — this ID cannot vote again.</p></div>
+        <div class="fields-grid">
+          <div><div class="f-k">Address on file</div><div class="f-v">${escapeHtml(v.address)}</div></div>
+          <div><div class="f-k">Phone</div><div class="f-v mono">${v.phone}</div></div>
+          <div><div class="f-k">Email</div><div class="f-v mono">${v.email}</div></div>
+          <div><div class="f-k">Verified via</div><div class="f-v">${escapeHtml(v.document)}</div></div>
+        </div>
+      </div>`;
+      return;
+    }
+    cardEl.innerHTML = `<div class="card">
+      <h2>Confirm your ballot</h2>
+      <p class="desc">Verify this is you, then select one option. Your choice is recorded anonymously — only your voted/not-voted status is ever shown publicly.</p>
+      <div class="voter-record">
+        <div class="who"><b>${escapeHtml(v.name)}</b><br><span class="id-tag">${v.id} · ${escapeHtml(v.state)} (${v.type})</span></div>
+        <span class="status-pill not-voted">NOT YET VOTED</span>
+      </div>
+      <div class="fields-grid">
+        <div><div class="f-k">Address on file</div><div class="f-v">${escapeHtml(v.address)}</div></div>
+        <div><div class="f-k">Phone</div><div class="f-v mono">${v.phone}</div></div>
+        <div><div class="f-k">Email</div><div class="f-v mono">${v.email}</div></div>
+        <div><div class="f-k">Registered document</div><div class="f-v">${escapeHtml(v.document)}</div></div>
+      </div>
+      <div class="candidates" id="candidateGrid"></div>
+      <div id="castMsg"></div>
+      <div style="margin-top:20px;"><button class="btn primary" id="castBtn" disabled>Cast my vote</button></div>
+    </div>`;
+    const grid = document.getElementById("candidateGrid");
+    CANDIDATES.forEach(c=>{
+      const el = document.createElement("div");
+      el.className = "cand"; el.dataset.id = c.id;
+      el.innerHTML = `<span class="sym">${c.symbol}</span><span class="name">${escapeHtml(c.name)}</span>`;
+      el.addEventListener("click", ()=>{
+        document.querySelectorAll(".cand").forEach(x=>x.classList.remove("selected"));
+        el.classList.add("selected");
+        selectedCandidate = c.id;
+        document.getElementById("castBtn").disabled = false;
+      });
+      grid.appendChild(el);
+    });
+    document.getElementById("castBtn").addEventListener("click", castVote);
+  }
+
+  async function castVote(){
+    if(!currentVoter || !selectedCandidate) return;
+    const btn = document.getElementById("castBtn");
+    btn.disabled = true; btn.textContent = "Recording…";
+    const fresh = voters.find(x=>x.id === currentVoter.id);
+    if(fresh.hasVoted){ renderVoterCard(fresh); return; }
+    fresh.hasVoted = true; fresh.votedFor = selectedCandidate; fresh.timestamp = new Date().toISOString();
+    await saveVoters();
+    currentVoter = fresh;
+    document.getElementById("voterCard").innerHTML = `<div class="card"><div class="stamp-wrap"><div class="stamp">✓</div>
+      <p class="stamp-title">Vote recorded</p>
+      <p class="stamp-sub"><b>${escapeHtml(fresh.name)}</b> (${fresh.id}) — marked as <i>voted</i> for ${escapeHtml(fresh.state)}, verified via ${escapeHtml(fresh.document)}.<br>Thank you for participating. This ID is now locked from voting again.</p></div>
+      <div class="fields-grid">
+        <div><div class="f-k">Address on file</div><div class="f-v">${escapeHtml(fresh.address)}</div></div>
+        <div><div class="f-k">Phone</div><div class="f-v mono">${fresh.phone}</div></div>
+        <div><div class="f-k">Email</div><div class="f-v mono">${fresh.email}</div></div>
+        <div><div class="f-k">Verified via</div><div class="f-v">${escapeHtml(fresh.document)}</div></div>
+      </div>
+    </div>`;
+    renderDashboard();
+  }
+
+  document.getElementById("rollToggle").addEventListener("click", ()=>{
+    const box = document.getElementById("rollBrowser");
+    if(box.style.display === "none"){ box.style.display = "block"; renderRollBrowser(); }
+    else { box.style.display = "none"; }
+  });
+
+  function renderRollBrowser(){
+    const box = document.getElementById("rollBrowser");
+    const sample = voters.slice(0,300);
+    const rows = sample.map(v=>`<tr>
+        <td class="mono">${v.id}</td><td>${escapeHtml(v.name)}</td><td>${escapeHtml(v.state)}</td>
+        <td>${v.hasVoted ? '<span class="status-pill voted">VOTED</span>' : '<span class="status-pill not-voted">NOT VOTED</span>'}</td>
+        <td><button class="btn ghost" data-pick="${v.id}" style="padding:6px 12px;font-size:12px;">Use this ID</button></td>
+      </tr>`).join("");
+    box.innerHTML = `<div style="max-height:280px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;">
+        <table><thead><tr><th class="mono">ID</th><th>Name</th><th>Region</th><th>Status</th><th></th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      <p class="small-note">Showing 300 of ${voters.length.toLocaleString("en-IN")} sample voters — click "Use this ID" to simulate logging in as that voter.</p>`;
+    box.querySelectorAll("[data-pick]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.getElementById("voterIdInput").value = btn.dataset.pick;
+        box.style.display = "none"; doLookup();
+        window.scrollTo({top:0, behavior:"smooth"});
+      });
+    });
+  }
+
+  // ---------- Number formatting (Indian digit grouping) ----------
+  function formatIndian(num){
+    num = Math.round(num);
+    let s = Math.abs(num).toString();
+    let last3 = s.length > 3 ? s.slice(-3) : s;
+    let rest = s.length > 3 ? s.slice(0,-3) : "";
+    if(rest !== "") last3 = "," + last3;
+    rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",");
+    return (num<0?"-":"") + rest + last3;
+  }
+  function crores(num){ return (num/1e7); }
+  function formatCr(num){ return crores(num).toFixed(2) + " Cr"; }
+
+  // ---------- National scale (population-based) ----------
+  function nationalScaleRows(){
+    return STATES.map(([name,type,popCr])=>{
+      const population = popCr * 1e7;
+      const electorate = population * VOTING_AGE_SHARE;
+      const pct = stateTurnout[name];
+      const votes = electorate * (pct/100);
+      return {name,type,population,electorate,votes,pct};
+    });
+  }
+
+  function renderAll(){ populateRegionFilter(); renderDashboard(); }
+
+  function populateRegionFilter(){
+    const sel = document.getElementById("voterRegionFilter");
+    sel.innerHTML = '<option value="all">All regions</option>' + STATES.map(([n])=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+  }
+
+  function renderDashboard(){
+    const rows = nationalScaleRows();
+    const totalPop = rows.reduce((s,r)=>s+r.population,0);
+    const totalElectorate = rows.reduce((s,r)=>s+r.electorate,0);
+    const totalVotes = rows.reduce((s,r)=>s+r.votes,0);
+    const natTurnoutPct = (totalVotes/totalElectorate*100);
+
+    document.getElementById("nationalStats").innerHTML = `
+      <div class="stat"><div class="num">${formatCr(totalPop)}</div><div class="lbl">Population (approx.)</div><div class="sub">${formatIndian(totalPop)}</div></div>
+      <div class="stat"><div class="num">${formatCr(totalElectorate)}</div><div class="lbl">Estimated electorate</div><div class="sub">~${(VOTING_AGE_SHARE*100).toFixed(0)}% of population</div></div>
+      <div class="stat"><div class="num">${natTurnoutPct.toFixed(1)}%</div><div class="lbl">Simulated turnout</div><div class="sub">weighted across regions</div></div>
+      <div class="stat"><div class="num">${formatCr(totalVotes)}</div><div class="lbl">Votes cast (simulated)</div><div class="sub">${formatIndian(totalVotes)}</div></div>
+    `;
+
+    renderTurnoutDonut(totalVotes, totalElectorate-totalVotes);
+    renderTopStates(rows);
+    renderStateTable(rows);
+    renderSampleStats();
+    renderVoterTable();
+    renderOfficerPanel();
+
+    const chip = document.getElementById("pollChip");
+    const chipText = document.getElementById("pollChipText");
+    if(pollClosed){ chip.classList.add("closed"); chipText.textContent = "Polling closed"; }
+    else { chip.classList.remove("closed"); chipText.textContent = "Polling open"; }
+  }
+
+  function renderTurnoutDonut(voted, notVoted){
+    const total = voted+notVoted;
+    const votedPct = (voted/total*100);
+    const donut = document.getElementById("turnoutDonut");
+    donut.style.background = `conic-gradient(var(--indelible) 0% ${votedPct}%, #EFEBE1 ${votedPct}% 100%)`;
+    donut.innerHTML = `<div class="donut-center"><div class="n">${votedPct.toFixed(1)}%</div><div class="l">Turnout</div></div>`;
+    document.getElementById("turnoutLegend").innerHTML = `
+      <div class="item"><span class="sw" style="background:var(--indelible);"></span>Voted<b>${formatCr(voted)}</b></div>
+      <div class="item"><span class="sw" style="background:#EFEBE1;"></span>Not voted<b>${formatCr(notVoted)}</b></div>
+      <p class="small-note" style="margin-top:2px;">National figure, weighted by each region's simulated turnout.</p>
+    `;
+  }
+
+  function renderTopStates(rows){
+    const top = rows.slice().sort((a,b)=>b.electorate-a.electorate).slice(0,10);
+    const max = top[0].electorate;
+    document.getElementById("topStatesRank").innerHTML = top.map((r,i)=>`
+      <div class="rank-row">
+        <span class="rk">${i+1}</span>
+        <span class="rn">${escapeHtml(r.name)}</span>
+        <div class="bar-bg" style="flex:1;"><div class="bar-fill" style="width:${(r.electorate/max*100).toFixed(1)}%;"></div></div>
+        <span class="rv">${formatCr(r.electorate)}</span>
+      </div>`).join("");
+  }
+
+  function renderStateTable(rows){
+    const search = (document.getElementById("stateSearch").value||"").toLowerCase();
+    const typeFilter = document.getElementById("typeFilter").value;
+    let list = rows.slice();
+    if(typeFilter !== "all") list = list.filter(r=>r.type===typeFilter);
+    if(search) list = list.filter(r=>r.name.toLowerCase().includes(search));
+    list.sort((a,b)=>a.name.localeCompare(b.name));
+    document.getElementById("stateTableBody").innerHTML = list.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.name)}</td>
+        <td><span class="type-tag">${r.type}</span></td>
+        <td class="mono">${formatIndian(r.population)}</td>
+        <td class="mono">${formatIndian(r.electorate)}</td>
+        <td class="mono">${formatIndian(r.votes)}</td>
+        <td><div style="display:flex;align-items:center;gap:8px;">
+          <div class="bar-bg"><div class="bar-fill" style="width:${r.pct}%;"></div></div>
+          <span class="mono" style="font-size:11.5px;width:40px;flex-shrink:0;">${r.pct.toFixed(0)}%</span>
+        </div></td>
+      </tr>`).join("") || `<tr><td colspan="6" style="color:var(--text-soft);">No regions match your filters.</td></tr>`;
+  }
+  document.getElementById("stateSearch").addEventListener("input", ()=>renderStateTable(nationalScaleRows()));
+  document.getElementById("typeFilter").addEventListener("change", ()=>renderStateTable(nationalScaleRows()));
+
+  function renderSampleStats(){
+    const total = voters.length;
+    const voted = voters.filter(v=>v.hasVoted).length;
+    document.getElementById("sampleStats").innerHTML = `
+      <div class="stat"><div class="num">${total.toLocaleString("en-IN")}</div><div class="lbl">Sample voters</div></div>
+      <div class="stat"><div class="num">${voted.toLocaleString("en-IN")}</div><div class="lbl">Voted in sample</div></div>
+      <div class="stat"><div class="num">${(total-voted).toLocaleString("en-IN")}</div><div class="lbl">Not yet voted</div></div>
+      <div class="stat"><div class="num">${(voted/total*100).toFixed(1)}%</div><div class="lbl">Sample turnout</div></div>
+    `;
+  }
+
+  function renderVoterTable(){
+    const region = document.getElementById("voterRegionFilter").value;
+    const status = document.getElementById("voterStatusFilter").value;
+    const search = (document.getElementById("voterSearch").value||"").toLowerCase();
+    let rows = voters.slice();
+    if(region !== "all") rows = rows.filter(v=>v.state===region);
+    if(status === "voted") rows = rows.filter(v=>v.hasVoted);
+    if(status === "not-voted") rows = rows.filter(v=>!v.hasVoted);
+    if(search) rows = rows.filter(v=>v.name.toLowerCase().includes(search) || v.id.toLowerCase().includes(search));
+    const matched = rows.length;
+    rows = rows.slice(0,200);
+    document.getElementById("voterTableBody").innerHTML = rows.map(v=>`
+      <tr>
+        <td class="mono">${v.id}</td><td>${escapeHtml(v.name)}</td><td>${escapeHtml(v.state)}</td>
+        <td><span class="type-tag">${escapeHtml(v.document)}</span></td>
+        <td class="mono" style="font-size:12px;white-space:nowrap;">${v.phone}</td>
+        <td class="mono" style="font-size:11.5px;">${v.email}</td>
+        <td style="font-size:12px;max-width:240px;">${escapeHtml(v.address)}</td>
+        <td>${v.hasVoted ? '<span class="status-pill voted">VOTED</span>' : '<span class="status-pill not-voted">NOT VOTED</span>'}</td>
+        <td class="mono">${v.hasVoted ? formatDate(v.timestamp) : "—"}</td>
+      </tr>`).join("") || `<tr><td colspan="9" style="color:var(--text-soft);">No voters match your filters.</td></tr>`;
+    document.getElementById("voterTableNote").textContent = matched > 200 ? `Showing first 200 of ${matched.toLocaleString("en-IN")} matches — narrow your search to see more.` : "";
+  }
+  document.getElementById("voterRegionFilter").addEventListener("change", renderVoterTable);
+  document.getElementById("voterStatusFilter").addEventListener("change", renderVoterTable);
+  document.getElementById("voterSearch").addEventListener("input", renderVoterTable);
+
+  function renderOfficerPanel(){
+    const area = document.getElementById("officerArea");
+    if(pollClosed){
+      const counts = {}; CANDIDATES.forEach(c=>counts[c.id]=0);
+      voters.forEach(v=>{ if(v.hasVoted && counts[v.votedFor]!==undefined) counts[v.votedFor]++; });
+      const totalVotes = Object.values(counts).reduce((a,b)=>a+b,0) || 1;
+      area.innerHTML = `<p class="msg info" style="margin-top:0;">Polling is closed. Results below are final for the interactive sample.</p>
+        <div style="margin-top:14px;">
+          ${CANDIDATES.map(c=>{
+            const n = counts[c.id]; const pct = (n/totalVotes*100).toFixed(1);
+            return `<div class="tally-row">
+              <div class="name">${c.symbol} ${escapeHtml(c.name)}</div>
+              <div class="bar-bg" style="flex:1;"><div class="bar-fill" style="width:${pct}%;background:${c.color};"></div></div>
+              <div class="count">${n.toLocaleString("en-IN")} (${pct}%)</div>
+            </div>`;
+          }).join("")}
+        </div>
+        <button class="btn ghost" id="reopenBtn" style="margin-top:10px;">Reopen polling (demo reset)</button>`;
+      document.getElementById("reopenBtn").addEventListener("click", async ()=>{ pollClosed = false; await savePollStatus(); renderDashboard(); });
+    } else {
+      area.innerHTML = `<div class="locked-box"><div class="lockicon">🔒</div>Party-wise tally is sealed while polling is open.</div>
+        <div class="row" style="margin-top:16px;">
+          <div><label for="officerPin">Officer PIN</label><input type="password" id="officerPin" placeholder="Enter PIN (demo: 2024)"></div>
+          <div style="flex:0 0 auto;"><button class="btn primary" id="closeBtn">Close poll &amp; declare result</button></div>
+        </div>
+        <div id="officerMsg"></div>`;
+      document.getElementById("closeBtn").addEventListener("click", async ()=>{
+        const pin = document.getElementById("officerPin").value.trim();
+        const msg = document.getElementById("officerMsg");
+        if(pin !== "2024"){ msg.innerHTML = '<div class="msg error">Incorrect PIN. Only an authorised officer can close polling.</div>'; return; }
+        pollClosed = true; await savePollStatus(); renderDashboard();
+      });
+    }
+  }
+
+  function formatDate(iso){
+    if(!iso) return "—";
+    const d = new Date(iso);
+    return d.toLocaleString(undefined,{year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+  loadData();
+})();
+</script>
+</body>
+</html>
